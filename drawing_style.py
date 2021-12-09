@@ -24,7 +24,8 @@ BACK_LANDMARKS = frozenset([
 BACK_CONNECTIONS = [(11, 12), (11, 23), (23, 24), (12, 24)]
 LEFT_ARM_CONNECTIONS = [(11, 13), (13, 15)]
 RIGHT_ARM_CONNECTIONS = [(12, 14), (14, 16)]
-RIGHT_LEG_CONNECTION = (26,28)
+RIGHT_LEG_CONNECTION = (26, 28)
+RIGHT_SIDE_CONNECTION = (12, 24)
 
 CORRECT_SPEC = DrawingSpec(_GREEN, thickness=_THICK)
 INCORRECT_SPEC = DrawingSpec(_RED, thickness=_THICK)
@@ -54,12 +55,17 @@ def get_curl_drawing_style(back_correct, left_arm_correct, right_arm_correct) ->
 
     return pose_landmark_style
 
-def get_squat_drawing_style(knee_correct) -> Mapping[Tuple[int, int], DrawingSpec]:
+def get_squat_drawing_style(knee_correct, back_correct) -> Mapping[Tuple[int, int], DrawingSpec]:
     pose_landmark_style = {}
 
     for connection in POSE_CONNECTIONS:
         if connection == RIGHT_LEG_CONNECTION:
             if knee_correct:
+                pose_landmark_style[connection] = CORRECT_SPEC
+            else:
+                pose_landmark_style[connection] = INCORRECT_SPEC
+        elif connection in BACK_CONNECTIONS:
+            if back_correct:
                 pose_landmark_style[connection] = CORRECT_SPEC
             else:
                 pose_landmark_style[connection] = INCORRECT_SPEC

@@ -6,7 +6,7 @@ from drawing_style import *
 from check_form import *
 
 def main(argv):
-    cap = cv2.VideoCapture('squat.mp4')
+    cap = cv2.VideoCapture(0)
     mpDraw = mp.solutions.drawing_utils
     mp_holistic = mp.solutions.holistic
     stage = None
@@ -22,8 +22,16 @@ def main(argv):
                 body_landmarks = results.pose_landmarks.landmark
                 if argv[0] == 'curl':
                     back_correct = back_straight(body_landmarks, frame_dims)
-                    left_arm_correct = left_arm_valid(body_landmarks, frame_dims)
-                    right_arm_correct = right_arm_valid(body_landmarks, frame_dims)
+                    left_arm_correct, left_elbow_back = left_arm_valid(body_landmarks, frame_dims)
+                    right_arm_correct, right_elbow_back = right_arm_valid(body_landmarks, frame_dims)
+
+                    if not back_correct:
+                        put_text(img, "STRAIGHTEN BACK!", (50, 100))
+                    if (not left_arm_correct and left_elbow_back) or (not right_arm_correct and right_elbow_back):
+                        put_text(img, "BRING ELBOW FORWARD", (50, 130))
+                    if (not left_arm_correct and not left_elbow_back) or (not right_arm_correct and not right_elbow_back):
+                        put_text(img, "BRING ELBOW BACK", (50, 130))
+
                     mpDraw.draw_landmarks(
                         img, 
                         results.pose_landmarks, 
@@ -37,6 +45,7 @@ def main(argv):
                     '''
                 elif argv[0] == 'squat':
                     knee_correct = knee_behind_toe(body_landmarks, frame_dims)
+                    back_correct = shoulder_behind_knee(body_landmarks, frame_dims)
                     knee_angle = get_knee_angle(body_landmarks, frame_dims)
 
                     
@@ -51,13 +60,15 @@ def main(argv):
                         put_text(img, "GOOD JOB!", (100, 100))
                     if not knee_correct:
                         put_text(img, "BRING KNEES BACK!", (100, 130))
+                    if not back_correct:
+                        put_text(img, "BRING SHOULDERS BACK!", (100, 160))
                     
 
                     mpDraw.draw_landmarks(
                         img, 
                         results.pose_landmarks, 
                         mp_holistic.POSE_CONNECTIONS,
-                        connection_drawing_spec=get_squat_drawing_style(knee_correct)
+                        connection_drawing_spec=get_squat_drawing_style(knee_correct, back_correct)
                     )                    
 
             cv2.imshow("image", img)

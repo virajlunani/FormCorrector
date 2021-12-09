@@ -38,11 +38,14 @@ def left_arm_valid(pose_landmarks, frame_dims):
     left_elbow_y = pose_landmarks[PoseLandmark.LEFT_ELBOW].y * height
 
     left_ratio = float((left_elbow_x - left_shoulder_x) / (left_elbow_y - left_shoulder_y))
-
-    if abs(math.degrees(math.atan(left_ratio))) < ARM_ANGLE_THRESHOLD:
-        return True
+    angle = math.degrees(math.atan(left_ratio))
+    if abs(angle) < ARM_ANGLE_THRESHOLD:
+        return True, None
     else:
-        return False
+        if angle < 0:
+            return False, True
+        else:
+            return False, False
 
 def right_arm_valid(pose_landmarks, frame_dims):
     width, height = frame_dims
@@ -54,11 +57,14 @@ def right_arm_valid(pose_landmarks, frame_dims):
     right_elbow_y = pose_landmarks[PoseLandmark.RIGHT_ELBOW].y * height
 
     right_ratio = float((right_elbow_x - right_shoulder_x) / (right_elbow_y - right_shoulder_y))
-
-    if abs(math.degrees(math.atan(right_ratio))) < ARM_ANGLE_THRESHOLD:
-        return True
+    angle = math.degrees(math.atan(right_ratio))
+    if abs(angle) < ARM_ANGLE_THRESHOLD:
+        return True, None
     else:
-        return False
+        if angle < 0:
+            return False, True
+        else:
+            return False, False
     
 
 def knee_behind_toe(pose_landmarks, frame_dims):
@@ -68,6 +74,18 @@ def knee_behind_toe(pose_landmarks, frame_dims):
     right_toe_x = pose_landmarks[PoseLandmark.RIGHT_FOOT_INDEX].x * width
 
     if (right_knee_x > right_toe_x):
+        return False
+    else:
+        return True    
+
+def shoulder_behind_knee(pose_landmarks, frame_dims):
+    width, _ = frame_dims
+
+    right_shoulder_x = pose_landmarks[PoseLandmark.RIGHT_SHOULDER].x * width
+
+    right_knee_x = pose_landmarks[PoseLandmark.RIGHT_KNEE].x * width
+
+    if (right_shoulder_x > right_knee_x):
         return False
     else:
         return True    
