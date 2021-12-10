@@ -1,6 +1,6 @@
 import csv
 
-NUM_POINTS = 501
+NUM_POINTS = 33
 
 def write_headers():
     headers = ["class"]
