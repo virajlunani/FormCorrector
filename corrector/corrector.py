@@ -8,6 +8,7 @@ from check_form import *
 import pickle
 
 OUTPUT_CORRECTIONS = True
+SAVE_VIDEO = False
 _BLUE = (255, 0, 0)
 
 def main():
@@ -16,6 +17,8 @@ def main():
         model = pickle.load(f)
 
     cap = cv2.VideoCapture(0)
+    if SAVE_VIDEO:
+        out = cv2.VideoWriter('demo.mp4', cv2.VideoWriter_fourcc(*'XVID'), 24, (640, 480))
 
     mpDraw = mp.solutions.drawing_utils
     mp_holistic = mp.solutions.holistic
@@ -37,8 +40,6 @@ def main():
                 X = pd.DataFrame([input_vector])
                 action = model.predict(X)[0]
                 put_text(img, action, (100, 50), _BLUE, 1.25, 2)
-                # action_prob = model.predict_proba(X)[0]
-                # print(action, action_prob)
                 
                 if action == 'Curl':
                     back_correct = back_straight(body_landmarks, frame_dims)
@@ -86,9 +87,16 @@ def main():
                         mp_holistic.POSE_CONNECTIONS,
                         connection_drawing_spec=get_squat_drawing_style(knee_correct, back_correct)
                     )
+                if SAVE_VIDEO:
+                    out.write(img)
 
             cv2.imshow("image", img)
-            cv2.waitKey(1)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    cap.release()
+    if SAVE_VIDEO:
+        out.release()
+    cv2.destroyAllWindows()
         
     
 if __name__ == "__main__":
